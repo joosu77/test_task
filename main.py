@@ -47,6 +47,6 @@ def main():
             time_taken = time.time()-start_time
             cum_times += time_taken
             num_times += 1
-            print(f"Time taken for frame {ctr}: {round(time_taken,2)}, average: {round(cum_times/num_times,2)}")
+            print(f"Time taken for frame {ctr}: {round(time_taken*1000,2)}ms, average: {round(cum_times/num_times*1000,2)}ms")
         
 main()
