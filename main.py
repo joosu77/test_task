@@ -2,11 +2,10 @@ import glob
 import cv2
 from numba import cuda
 import time
-import cv2
 
-check_arr = [0,42,42,42,40,43,39,46,41,43,39,42,41,41]
+check_arr = [1512,1524,1520,1524,1517,1520,1526,1531,1522,1511,1529,1520,1536,1532]
 
-@cuda.jit('void(uint8[:,:], uint8[:,:], uint8, uint8, uint8)')
+@cuda.jit('void(uint8[:,:], uint8[:,:], uint8, uint16, uint16)')
 def cuda_kernel(input, output, threshold, W, H):
     startX, startY = cuda.grid(2)
     stepX = cuda.gridDim.x * cuda.blockDim.x
@@ -33,13 +32,8 @@ def main():
             # blockdim and griddim define how many cuda workers are used
             blockdim = (16,16)
             griddim = (32,32)
-            print("start")
-            cuda_kernel[blockdim,griddim](d_image, d_output, 50, W, H)
-            print("end")
+            cuda_kernel[blockdim,griddim](d_image, d_output, 150, W, H)
             output = d_output.copy_to_host()
-            
-            cv2.imshow("1", output)
-            cv2.waitKey(1)
             
             found_pixels = []
             for x in range(W):
@@ -48,14 +42,11 @@ def main():
                         found_pixels.append((x,y))
                         
             # This list should not change after optimizations:
-            try:
-                assert len(found_pixels) == check_arr[ctr]
-            except:
-                print(ctr, len(found_pixels), check_arr[ctr])
-            #print(f"Pixels found for frame {ctr}: {len(found_pixels)}")
+            assert len(found_pixels) == check_arr[ctr]
+            
             time_taken = time.time()-start_time
             cum_times += time_taken
             num_times += 1
-            print(f"Time taken: {time_taken}, average: {round(cum_times/num_times,2)}")
+            print(f"Time taken for frame {ctr}: {round(time_taken,2)}, average: {round(cum_times/num_times,2)}")
         
 main()
